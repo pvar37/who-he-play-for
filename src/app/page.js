@@ -365,7 +365,8 @@ export default function GameBoard() {
     };
 
     const handleShare = () => {
-        const squares = dailyData.results.map(r => (r.correct ? '🟩' : '🟥')).join('');
+        const emojis = dailyData.results.map(r => (r.correct ? '🟩' : '🟥'));
+        const squares = `${emojis.slice(0, 5).join('')}\n${emojis.slice(5, 10).join('')}`;
         const score = dailyData.results.filter(r => r.correct).length;
         const text = `who he play for? world cup edition\nwhoheplayfor.pranayvarada.com\n${dailyData.date}\n${score}/10\n\n${squares}`;
         navigator.clipboard.writeText(text);
