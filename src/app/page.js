@@ -94,7 +94,8 @@ export default function GameBoard() {
         const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
         const initDaily = () => {
-            const pool = [...playersData].sort((a, b) => a.name.localeCompare(b.name));
+            const sortedPool = [...playersData].sort((a, b) => a.name.localeCompare(b.name));
+
             let hash = 0;
             for (let i = 0; i < dateStr.length; i++) hash = Math.imul(31, hash) + dateStr.charCodeAt(i) | 0;
             let seed = hash + 123456789;
@@ -106,12 +107,49 @@ export default function GameBoard() {
                 return ((t ^ t >>> 14) >>> 0) / 4294967296;
             };
 
+            const shuffle = (array) => {
+                let currentIndex = array.length, randomIndex;
+                while (currentIndex !== 0) {
+                    randomIndex = Math.floor(random() * currentIndex);
+                    currentIndex--;
+                    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+                }
+                return array;
+            };
+
+            const positionalPools = { GK: [], DF: [], MF: [], FW: [] };
+            sortedPool.forEach(p => {
+                const primaryPos = p.position ? p.position.split(',')[0].trim() : 'MF';
+                if (positionalPools[primaryPos]) positionalPools[primaryPos].push(p);
+            });
+
+            const validFormations = [
+                [4, 4, 2], [4, 3, 3], [4, 5, 1],
+                [5, 3, 2], [5, 4, 1],
+                [3, 5, 2], [3, 4, 3]
+            ];
+
+            const formIdx = Math.floor(random() * validFormations.length);
+            const [dfCount, mfCount, fwCount] = validFormations[formIdx];
+
             const selected = [];
-            for (let i = 0; i < 10; i++) {
-                const idx = Math.floor(random() * pool.length);
-                selected.push(pool[idx]);
-                pool.splice(idx, 1);
-            }
+
+            const pickFromGroup = (groupName, count) => {
+                const groupPool = [...positionalPools[groupName]];
+                for (let i = 0; i < count; i++) {
+                    if (groupPool.length === 0) break;
+                    const idx = Math.floor(random() * groupPool.length);
+                    selected.push(groupPool[idx]);
+                    groupPool.splice(idx, 1);
+                }
+            };
+
+            pickFromGroup('GK', 1);
+            pickFromGroup('DF', dfCount);
+            pickFromGroup('MF', mfCount);
+            pickFromGroup('FW', fwCount);
+
+            shuffle(selected);
 
             const newData = { date: dateStr, players: selected, currentIndex: 0, results: [], completed: false };
             setDailyData(newData);
@@ -131,7 +169,6 @@ export default function GameBoard() {
         }
     }, []);
 
-    // Preload next image for Daily Mode
     useEffect(() => {
         if (gameMode === 'daily' && dailyData.players.length > 0 && dailyData.currentIndex < dailyData.players.length - 1) {
             const nextPlayer = dailyData.players[dailyData.currentIndex + 1];
@@ -173,7 +210,7 @@ export default function GameBoard() {
     const executeNextTurn = () => {
         if (gameMode === 'daily') {
             const nextIndex = dailyData.currentIndex + 1;
-            const isDone = nextIndex >= 10;
+            const isDone = nextIndex >= 11;
             const updated = {
                 ...dailyData,
                 currentIndex: isDone ? dailyData.currentIndex : nextIndex,
@@ -366,9 +403,10 @@ export default function GameBoard() {
 
     const handleShare = () => {
         const emojis = dailyData.results.map(r => (r.correct ? '🟩' : '🟥'));
-        const squares = `${emojis.slice(0, 5).join('')}\n${emojis.slice(5, 10).join('')}`;
+        const squares = `${emojis.slice(0, 6).join('')}\n${emojis.slice(6, 11).join('')}`;
         const score = dailyData.results.filter(r => r.correct).length;
-        const text = `who he play for? world cup edition\nwhoheplayfor.pranayvarada.com\n${dailyData.date}\n${score}/10\n\n${squares}`;
+        const text = `who he play for? world cup edition\nwhoheplayfor.pranayvarada.com\ndaily XI: ${dailyData.date}\n${score}/11\n\n${squares}`;
+
         navigator.clipboard.writeText(text);
         setShareText("COPIED!");
         setTimeout(() => setShareText("SHARE RESULTS"), 2000);
@@ -400,7 +438,7 @@ export default function GameBoard() {
                         </div>
 
                         <p className="text-sm font-bold text-[#0A192F]/80 mb-6 leading-relaxed px-2">
-                            Do you know your 2026 FIFA World Cup players? Test your knowledge in this game inspired by the popular <i className="font-black">Inside the NBA</i> segment.
+                            Do you know your 2026 FIFA World Cup players? Test your knowledge in this game inspired by the "Who He Play For?" segment on <i className="font-black">Inside the NBA</i>.
                         </p>
 
                         <h2 className="text-xl font-black italic mb-4 text-[#0A192F]">HOW TO PLAY</h2>
@@ -458,7 +496,7 @@ export default function GameBoard() {
                             onClick={() => handleModeChange('daily')}
                             className={`px-4 py-1.5 !rounded-full text-xs font-black uppercase tracking-wider transition-colors appearance-none outline-none focus:outline-none ${gameMode === 'daily' ? 'bg-[#0A192F] text-white' : 'bg-transparent hover:bg-transparent text-[#64748B] hover:text-[#0A192F]'}`}
                         >
-                            Daily 10
+                            Daily XI
                         </button>
                         <button
                             onClick={() => handleModeChange('country')}
@@ -482,7 +520,7 @@ export default function GameBoard() {
                         <p className="text-sm font-bold text-[#64748B] mb-4 uppercase tracking-widest">{dailyData.date}</p>
 
                         <div className="text-6xl font-black text-[#0A192F] mb-6 leading-none">
-                            {dailyData.results.filter(r => r.correct).length} <span className="text-3xl text-[#64748B]">/ 10</span>
+                            {dailyData.results.filter(r => r.correct).length} <span className="text-3xl text-[#64748B]">/ 11</span>
                         </div>
 
                         <div className="w-full max-h-[30vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 border-2 border-[#E2E8F0] p-2 mb-6">
@@ -595,8 +633,8 @@ export default function GameBoard() {
 
                         <div className="mt-auto shrink-0 pt-10 pb-4 md:pt-4 border-t-4 border-transparent z-10 w-full">
                             {gameMode === 'daily' ? (
-                                <div className="flex justify-center items-center gap-1.5 sm:gap-2 pt-4 border-t-4 border-[#0A192F] w-full mt-4">
-                                    {[...Array(10)].map((_, i) => (
+                                <div className="flex justify-center items-center gap-1.5 sm:gap-2 pt-4 border-t-4 border-[#0A192F] w-full mt-4 flex-wrap max-w-[280px] mx-auto">
+                                    {[...Array(11)].map((_, i) => (
                                         <div
                                             key={i}
                                             className={`w-6 h-6 sm:w-7 sm:h-7 border-2 border-[#0A192F] ${i < dailyData.results.length
