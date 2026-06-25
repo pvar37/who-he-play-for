@@ -633,16 +633,31 @@ export default function GameBoard() {
 
                         <div className="mt-auto shrink-0 pt-10 pb-4 md:pt-4 border-t-4 border-transparent z-10 w-full">
                             {gameMode === 'daily' ? (
-                                <div className="flex justify-center items-center gap-1.5 sm:gap-2 pt-4 border-t-4 border-[#0A192F] w-full mt-4 flex-wrap max-w-[280px] mx-auto">
-                                    {[...Array(11)].map((_, i) => (
-                                        <div
-                                            key={i}
-                                            className={`w-6 h-6 sm:w-7 sm:h-7 border-2 border-[#0A192F] ${i < dailyData.results.length
-                                                    ? (dailyData.results[i].correct ? 'bg-[#2A9D8F]' : 'bg-[#E63946]')
-                                                    : (i === dailyData.currentIndex ? 'bg-[#3B82F6] animate-pulse' : 'bg-transparent')
+                                <div className="flex flex-col items-center gap-1.5 sm:gap-2 pt-4 border-t-4 border-[#0A192F] w-full mt-4">
+                                    <div className="flex justify-center items-center gap-1.5 sm:gap-2">
+                                        {[0, 1, 2, 3, 4, 5].map(globalIndex => (
+                                            <div 
+                                                key={globalIndex} 
+                                                className={`w-6 h-6 sm:w-7 sm:h-7 border-2 border-[#0A192F] ${
+                                                    globalIndex < dailyData.results.length 
+                                                        ? (dailyData.results[globalIndex].correct ? 'bg-[#2A9D8F]' : 'bg-[#E63946]') 
+                                                        : (globalIndex === dailyData.currentIndex ? 'bg-[#3B82F6] animate-pulse' : 'bg-transparent')
                                                 }`}
-                                        ></div>
-                                    ))}
+                                            ></div>
+                                        ))}
+                                    </div>
+                                    <div className="flex justify-center items-center gap-1.5 sm:gap-2">
+                                        {[6, 7, 8, 9, 10].map(globalIndex => (
+                                            <div 
+                                                key={globalIndex} 
+                                                className={`w-6 h-6 sm:w-7 sm:h-7 border-2 border-[#0A192F] ${
+                                                    globalIndex < dailyData.results.length 
+                                                        ? (dailyData.results[globalIndex].correct ? 'bg-[#2A9D8F]' : 'bg-[#E63946]') 
+                                                        : (globalIndex === dailyData.currentIndex ? 'bg-[#3B82F6] animate-pulse' : 'bg-transparent')
+                                                }`}
+                                            ></div>
+                                        ))}
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="flex justify-center items-center gap-10 pb-2 border-t-4 border-[#0A192F] pt-4">
