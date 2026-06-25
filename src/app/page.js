@@ -399,7 +399,7 @@ export default function GameBoard() {
                         </div>
 
                         <p className="text-sm font-bold text-[#0A192F]/80 mb-6 leading-relaxed px-2">
-                            Do you know your 2026 FIFA World Cup players? Test your knowledge in this game inspired by the "Who He Play For?" segment on <i className="font-black">Inside the NBA</i>.
+                            Do you know your 2026 FIFA World Cup players? Test your knowledge in this game inspired by the popular <i className="font-black">Inside the NBA</i> segment.
                         </p>
 
                         <h2 className="text-xl font-black italic mb-4 text-[#0A192F]">HOW TO PLAY</h2>
