@@ -9,11 +9,11 @@ const barlow = Barlow({
 });
 
 export const metadata = {
-  title: 'who he play for? world cup edition',
+  title: 'who he play for?',
   description: 'do you know your world cup players?',
   metadataBase: new URL('https://whoheplayfor.pranayvarada.com'),
   openGraph: {
-    title: 'who he play for? world cup edition',
+    title: 'who he play for?',
     description: 'do you know your world cup players?',
     url: 'https://whoheplayfor.pranayvarada.com',
     siteName: 'Who He Play For?',
@@ -22,7 +22,7 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'who he play for? world cup edition',
+    title: 'who he play for?',
     description: 'do you know your world cup players?',
   },
 };
