@@ -33,8 +33,17 @@ const normalizeText = (str) => {
     return str
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
+        .replace(/['ʻ’]/g, "") // Strips standard apostrophes, the Uzbek ʻ, and curly apostrophes
         .toLowerCase()
         .trim();
+};
+
+const toDisplayCase = (text, country) => {
+    if (!text) return '';
+    if (country === 'Türkiye') {
+        return text.replace(/i/g, 'İ').replace(/ı/g, 'I').toUpperCase();
+    }
+    return text.toUpperCase();
 };
 
 const countryAliases = {
@@ -364,7 +373,17 @@ export default function GameBoard() {
             setNameScore(prev => ({ correct: prev.correct + (isCorrect ? 1 : 0), total: prev.total + 1 }));
 
             const officialMatch = uniqueNames.find(n => normalizeText(n) === resolvedGuess);
-            setInputValue(isCorrect ? activeCurrent.name.toUpperCase() : (officialMatch || guess).toUpperCase());
+            const matchedName = isCorrect ? activeCurrent.name : (officialMatch || guess);
+
+            let countryContext = null;
+            if (isCorrect) {
+                countryContext = activeCurrent.country;
+            } else if (officialMatch) {
+                const playerRef = playersData.find(p => p.name === officialMatch);
+                if (playerRef) countryContext = playerRef.country;
+            }
+
+            setInputValue(toDisplayCase(matchedName, countryContext));
         }
 
         setShowDropdown(false);
@@ -526,7 +545,9 @@ export default function GameBoard() {
                         <div className="w-full max-h-[30vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 border-2 border-[#E2E8F0] p-2 mb-6">
                             {dailyData.players.map((p, i) => (
                                 <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 py-2.5 px-2 last:border-0 gap-1">
-                                    <span className="font-bold text-[#0A192F] text-sm uppercase leading-tight line-clamp-1">{i + 1}. {p.name}</span>
+                                    <span className="font-bold text-[#0A192F] text-sm leading-tight line-clamp-1">
+                                        {i + 1}. {toDisplayCase(p.name, p.country)}
+                                    </span>
                                     <span className="font-bold text-[#64748B] text-xs uppercase shrink-0">
                                         {dailyData.results[i]?.correct ? '✅' : '❌'} {countryFlags[p.country]} {p.country}
                                     </span>
@@ -552,8 +573,8 @@ export default function GameBoard() {
                                 className="w-[22vh] h-[28vh] max-w-[200px] max-h-[260px] min-w-[130px] min-h-[170px] object-cover border-4 border-[#0A192F]"
                             />
 
-                            <h2 className="text-3xl md:text-4xl font-black mt-4 text-[#0A192F] tracking-wide uppercase text-center leading-tight px-2">
-                                {gameMode === 'country' || gameMode === 'daily' || feedback !== null ? activeCurrent.name : "???"}
+                            <h2 className="text-3xl md:text-4xl font-black mt-4 text-[#0A192F] tracking-wide text-center leading-tight px-2">
+                                {gameMode === 'country' || gameMode === 'daily' || feedback !== null ? toDisplayCase(activeCurrent.name, activeCurrent.country) : "???"}
                             </h2>
 
                             {gameMode === 'name' && feedback !== null && (
@@ -591,14 +612,18 @@ export default function GameBoard() {
                                                     <li
                                                         key={item}
                                                         onClick={() => submitGuess(item)}
-                                                        className={`px-4 py-3 cursor-pointer font-bold border-b border-gray-200 last:border-b-0 transition-colors uppercase ${index === focusedIndex
-                                                                ? 'bg-[#0A192F] text-white'
+                                                        className={`px-4 py-3 cursor-pointer font-bold border-b border-gray-200 last:border-b-0 transition-colors ${
+                                                            index === focusedIndex 
+                                                                ? 'bg-[#0A192F] text-white' 
                                                                 : 'hover:bg-[#0A192F] hover:text-white text-[#0A192F]'
-                                                            }`}
+                                                        }`}
                                                     >
                                                         {gameMode === 'country' || gameMode === 'daily'
                                                             ? `${countryFlags[item] || ""} ${item === "Türkiye" ? "TÜRKİYE" : item.toUpperCase()}`
-                                                            : item.toUpperCase()
+                                                            : (() => {
+                                                                const p = playersData.find(player => player.name === item);
+                                                                return p ? toDisplayCase(item, p.country) : item.toUpperCase();
+                                                            })()
                                                         }
                                                     </li>
                                                 ))
